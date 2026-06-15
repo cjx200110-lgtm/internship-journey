@@ -29,7 +29,7 @@ export default function DailyReflections({ reflections }) {
               {item.title ? `${item.title}：` : ""}
               {getSummary(item.content)}
             </span>
-            <span className="daily-arrow">›</span>
+            <span className="daily-arrow" aria-hidden="true" />
           </summary>
           <div className="daily-full">
             {item.title ? <b>{item.title}</b> : null}

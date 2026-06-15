@@ -464,15 +464,27 @@ main {
 }
 
 .daily-arrow {
+  position: relative;
   width: 42px;
   height: 42px;
   border-radius: 50%;
   background: #111;
   color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 22px;
+  display: block;
   transition: transform 0.28s ease;
+}
+
+.daily-arrow::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-top: 3px solid currentColor;
+  border-right: 3px solid currentColor;
+  border-radius: 1px;
+  transform: translate(-62%, -50%) rotate(45deg);
 }
 
 .daily-entry[open] .daily-arrow {
