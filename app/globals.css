@@ -247,6 +247,49 @@ main {
   letter-spacing: 0;
 }
 
+.report-query-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 249, 0.88);
+  box-shadow: var(--soft);
+}
+
+.report-query-bar div,
+.report-query-bar label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.report-query-bar b {
+  color: #202020;
+  font-size: 16px;
+}
+
+.report-query-bar select {
+  min-width: 260px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 700;
+  outline: none;
+}
+
+.report-query-bar select:focus {
+  border-color: #111;
+}
+
 .poster-wrap {
   display: flex;
   justify-content: center;
@@ -1449,6 +1492,16 @@ main {
 
   .section-head h2 {
     font-size: 26px;
+  }
+
+  .report-query-bar {
+    display: grid;
+    gap: 12px;
+  }
+
+  .report-query-bar select {
+    width: 100%;
+    min-width: 0;
   }
 
   .poster {

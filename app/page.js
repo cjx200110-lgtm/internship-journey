@@ -1,10 +1,14 @@
 import HeroOrbit from "@/app/components/HeroOrbit";
 import DailyReflections from "@/app/components/DailyReflections";
-import { getLatestMonthlyReport, getReflections } from "@/lib/data";
+import MonthlyReportViewer from "@/app/components/MonthlyReportViewer";
+import { getPublishedMonthlyReports, getReflections } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 const fallbackReport = {
+  id: "fallback",
+  period_start: "",
+  period_end: "",
   overview_lines: [
     "完成重点任务的信息梳理、需求确认和阶段性推进。",
     "沉淀过程文档、问题记录和汇报材料。",
@@ -29,31 +33,27 @@ const fallbackReport = {
   ]
 };
 
-function RichContent({ html }) {
-  return <span className="rich-content" dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
 async function loadPageData() {
   try {
-    const [report, reflections] = await Promise.all([
-      getLatestMonthlyReport(),
+    const [reports, reflections] = await Promise.all([
+      getPublishedMonthlyReports(),
       getReflections()
     ]);
 
     return {
-      report: report || fallbackReport,
+      reports: reports.length ? reports : [fallbackReport],
       reflections
     };
   } catch {
     return {
-      report: fallbackReport,
+      reports: [fallbackReport],
       reflections: []
     };
   }
 }
 
 export default async function HomePage() {
-  const { report, reflections } = await loadPageData();
+  const { reports, reflections } = await loadPageData();
 
   return (
     <div className="page">
@@ -75,57 +75,7 @@ export default async function HomePage() {
           <div className="section-head">
             <h2>月度工作报告</h2>
           </div>
-          <div className="poster-wrap">
-            <article className="poster" aria-label="月度工作报告">
-              <div className="poster-inner">
-                <section className="overview-block">
-                  <h3>本月工作概况</h3>
-                  <div className="overview-lines">
-                    {report.overview_lines.map((line, index) => (
-                      <div className="overview-line" key={`${line}-${index}`}>
-                        <i>{index + 1}</i>
-                        <RichContent html={line} />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="reflection-block">
-                  <h3>总结与反思</h3>
-                  <div className="reflection-list">
-                    {report.reflections.map((item) => (
-                      <div className="reflection-item" key={item.title}>
-                        <b>{item.title}</b>
-                        <div className="reflection-text">
-                          <span className="label">事例：</span>
-                          <RichContent html={item.example} />
-                        </div>
-                        <div className="reflection-text">
-                          <span className="label">分析：</span>
-                          <RichContent html={item.analysis} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="todo-block">
-                  <h3>To do list</h3>
-                  <div className="todo-list">
-                    {report.todo_items.map((item, index) => (
-                      <div className="todo-item" key={`${item.title}-${index}`}>
-                        <i>{index + 1}</i>
-                        <div>
-                          <b>{item.title}</b>
-                          <RichContent html={item.detail} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            </article>
-          </div>
+          <MonthlyReportViewer reports={reports} />
         </section>
 
         <section className="section" id="daily">
