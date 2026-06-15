@@ -59,7 +59,8 @@ export default async function HomePage() {
           <div className="center-copy">
             <h1>工作总结</h1>
             <a className="cta" href="#report">
-              <span>→</span>查看本月总结
+              <span className="cta-arrow" aria-hidden="true" />
+              查看本月总结
             </a>
           </div>
         </div>

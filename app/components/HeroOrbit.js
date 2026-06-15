@@ -3,14 +3,14 @@
 import { useEffect, useRef } from "react";
 
 const nodes = [
-  { key: "doc", angle: 250 },
-  { key: "chart", angle: 305 },
-  { key: "check", angle: 350 },
-  { key: "bulb", angle: 45 },
-  { key: "note", angle: 95 },
-  { key: "user", angle: 145 },
-  { key: "calendar", angle: 200 },
-  { key: "ai", angle: 225 }
+  { key: "bulb", angle: 270 },
+  { key: "check", angle: 315 },
+  { key: "user", angle: 0 },
+  { key: "calendar", angle: 45 },
+  { key: "ai", angle: 90 },
+  { key: "doc", angle: 135 },
+  { key: "chart", angle: 180 },
+  { key: "note", angle: 225 }
 ];
 
 export default function HeroOrbit() {
