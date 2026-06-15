@@ -679,9 +679,88 @@ main {
   cursor: pointer;
 }
 
+.admin-form .secondary-button {
+  background: #8f8d88;
+}
+
 .admin-form button:disabled {
   cursor: wait;
   opacity: 0.64;
+}
+
+.reflection-draft-box {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf6;
+}
+
+.reflection-draft-box h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.reflection-draft-list {
+  display: grid;
+  gap: 10px;
+}
+
+.reflection-draft-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.reflection-draft-item span {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reflection-draft-item b {
+  display: block;
+  margin-bottom: 4px;
+  color: #202020;
+}
+
+.reflection-draft-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.reflection-draft-item div:last-child {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.reflection-draft-item button {
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #111;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.reflection-draft-item button + button {
+  background: #8f8d88;
 }
 
 .admin-records {
