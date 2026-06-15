@@ -253,7 +253,7 @@ main {
 }
 
 .poster {
-  width: min(100%, 980px);
+  width: 100%;
   min-height: 1280px;
   background: var(--card);
   border-radius: 8px;
