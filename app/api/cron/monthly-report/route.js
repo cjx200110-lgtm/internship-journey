@@ -15,6 +15,21 @@ export async function GET(request) {
     const period = getReportPeriod(new Date());
     const supabase = getSupabaseAdmin();
 
+    const { data: existingReport, error: existingError } = await supabase
+      .from("monthly_reports")
+      .select("id,status")
+      .eq("period_start", period.startDate)
+      .eq("period_end", period.endDate)
+      .maybeSingle();
+
+    if (existingError) {
+      throw existingError;
+    }
+
+    if (existingReport?.status === "published") {
+      return NextResponse.json({ report: existingReport, skipped: "already_published" });
+    }
+
     const { data: reflections, error: reflectionsError } = await supabase
       .from("reflections")
       .select("id,title,content,reflection_date,created_at")
@@ -40,11 +55,13 @@ export async function GET(request) {
           period_end: period.endDate,
           overview_lines: generated.overview_lines,
           reflections: generated.reflections,
-          todo_items: generated.todo_items
+          todo_items: generated.todo_items,
+          status: "draft",
+          updated_at: new Date().toISOString()
         },
         { onConflict: "period_start,period_end" }
       )
-      .select("id,period_start,period_end,overview_lines,reflections,todo_items,created_at")
+      .select("id,period_start,period_end,overview_lines,reflections,todo_items,status,created_at,updated_at")
       .single();
 
     if (upsertError) {

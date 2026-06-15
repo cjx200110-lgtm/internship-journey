@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { assertAdminPassword } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 const CreateReflectionSchema = z.object({
@@ -20,16 +21,6 @@ function getExtension(file) {
 
   const fromType = file.type?.split("/").pop()?.toLowerCase();
   return fromType && /^[a-z0-9]+$/.test(fromType) ? fromType : "png";
-}
-
-function assertAdminPassword(password) {
-  const expected = process.env.ADMIN_PASSWORD;
-
-  if (expected && password !== expected) {
-    const error = new Error("上传密码不正确。");
-    error.status = 401;
-    throw error;
-  }
 }
 
 async function ensureImageBucket(supabase) {
