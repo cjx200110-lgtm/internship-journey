@@ -9,6 +9,11 @@ const CreateReflectionSchema = z.object({
   reflection_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 });
 
+const UpdateReflectionSchema = CreateReflectionSchema.extend({
+  id: z.string().uuid(),
+  image_urls: z.array(z.string().url()).optional()
+});
+
 const IMAGE_BUCKET = "reflection-images";
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const MAX_IMAGE_COUNT = 6;
@@ -106,6 +111,40 @@ async function parseRequest(request) {
   };
 }
 
+async function parseUpdateRequest(request) {
+  const contentType = request.headers.get("content-type") || "";
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await request.formData();
+    const files = formData
+      .getAll("images")
+      .filter((file) => file && typeof file === "object" && file.size > 0);
+
+    if (files.length > MAX_IMAGE_COUNT) {
+      throw new Error(`一次最多上传 ${MAX_IMAGE_COUNT} 张图片。`);
+    }
+
+    return {
+      payload: UpdateReflectionSchema.parse({
+        id: formData.get("id"),
+        title: formData.get("title") || null,
+        content: formData.get("content"),
+        reflection_date: formData.get("reflection_date"),
+        image_urls: JSON.parse(String(formData.get("image_urls") || "[]"))
+      }),
+      password: String(formData.get("password") || ""),
+      files
+    };
+  }
+
+  const body = await request.json();
+  return {
+    payload: UpdateReflectionSchema.parse(body),
+    password: String(body.password || ""),
+    files: []
+  };
+}
+
 export async function GET() {
   try {
     const supabase = getSupabaseAdmin();
@@ -148,6 +187,37 @@ export async function POST(request) {
     }
 
     return NextResponse.json({ reflection: data }, { status: 201 });
+  } catch (error) {
+    const status = error.status || (error.name === "ZodError" ? 400 : 500);
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}
+
+export async function PUT(request) {
+  try {
+    const { payload, password, files } = await parseUpdateRequest(request);
+    assertAdminPassword(password);
+    const supabase = getSupabaseAdmin();
+    const newImageUrls = await uploadImages(supabase, files);
+    const imageUrls = [...(payload.image_urls || []), ...newImageUrls];
+
+    const { data, error } = await supabase
+      .from("reflections")
+      .update({
+        title: payload.title || null,
+        content: payload.content,
+        reflection_date: payload.reflection_date,
+        image_urls: imageUrls
+      })
+      .eq("id", payload.id)
+      .select("id,title,content,reflection_date,image_urls,created_at")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({ reflection: data });
   } catch (error) {
     const status = error.status || (error.name === "ZodError" ? 400 : 500);
     return NextResponse.json({ error: error.message }, { status });

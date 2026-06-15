@@ -687,7 +687,7 @@ main {
 
 .admin-record {
   display: grid;
-  grid-template-columns: 1fr 84px;
+  grid-template-columns: 1fr auto;
   gap: 14px;
   align-items: center;
   padding: 14px;
@@ -722,19 +722,85 @@ main {
   font-weight: 400;
 }
 
-.admin-record button {
+.admin-record-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.admin-record button,
+.admin-record-actions button {
   height: 40px;
   border: 0;
   border-radius: 8px;
+  padding: 0 14px;
   background: #111;
   color: #fff;
   font-weight: 800;
   cursor: pointer;
 }
 
-.admin-record button:disabled {
+.admin-record-actions button + button {
+  background: #8f8d88;
+}
+
+.admin-record button:disabled,
+.admin-record-actions button:disabled {
   cursor: wait;
   opacity: 0.55;
+}
+
+.admin-record-edit {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 14px;
+  font-weight: 400;
+}
+
+.admin-record-edit label {
+  display: grid;
+  gap: 8px;
+  color: #333;
+  font-weight: 400;
+}
+
+.admin-record-edit input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 400;
+  outline: none;
+}
+
+.admin-record-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.admin-record-images span {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-record-images img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f5f2ee;
+}
+
+.admin-record-images button {
+  height: 32px;
+  background: #8f8d88;
+  font-size: 13px;
 }
 
 .form-status {

@@ -9,20 +9,20 @@ const ReportSchema = z.object({
   password: z.string().optional(),
   period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   period_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  overview_lines: z.array(z.string().trim().min(1)).length(3),
+  overview_lines: z.array(z.string().trim().min(1)).min(1),
   reflections: z.array(
     z.object({
       title: z.string().trim().min(1),
       example: z.string().trim().min(1),
       analysis: z.string().trim().min(1)
     })
-  ).min(2).max(4),
+  ).min(1),
   todo_items: z.array(
     z.object({
       title: z.string().trim().min(1),
       detail: z.string().trim().min(1)
     })
-  ).min(3).max(5)
+  ).min(1)
 });
 
 export async function GET() {

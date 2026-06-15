@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import RichTextEditor from "@/app/components/RichTextEditor";
 
 function stripHtml(value) {
   return (value || "").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
@@ -15,6 +16,8 @@ export default function AdminReflectionRecords() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("加载中");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [savingId, setSavingId] = useState("");
+  const [editingId, setEditingId] = useState("");
 
   async function loadRecords() {
     const response = await fetch("/api/reflections");
@@ -58,6 +61,55 @@ export default function AdminReflectionRecords() {
     setIsDeleting(false);
   }
 
+  function updateRecord(id, key, value) {
+    setRecords((current) =>
+      current.map((item) => (item.id === id ? { ...item, [key]: value } : item))
+    );
+  }
+
+  function removeImage(id, url) {
+    setRecords((current) =>
+      current.map((item) =>
+        item.id === id
+          ? { ...item, image_urls: (item.image_urls || []).filter((imageUrl) => imageUrl !== url) }
+          : item
+      )
+    );
+  }
+
+  async function saveRecord(item, event) {
+    event.preventDefault();
+    setSavingId(item.id);
+    setStatus("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    formData.set("id", item.id);
+    formData.set("title", item.title || "");
+    formData.set("content", item.content || "");
+    formData.set("reflection_date", item.reflection_date);
+    formData.set("image_urls", JSON.stringify(item.image_urls || []));
+    formData.set("password", password);
+
+    const response = await fetch("/api/reflections", {
+      method: "PUT",
+      body: formData
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (response.ok) {
+      setRecords((current) =>
+        current.map((record) => (record.id === item.id ? result.reflection : record))
+      );
+      setEditingId("");
+      setStatus("已保存修改");
+    } else {
+      setStatus(result.error || "保存失败");
+    }
+
+    setSavingId("");
+  }
+
   return (
     <div className="admin-records">
       <label>
@@ -72,14 +124,76 @@ export default function AdminReflectionRecords() {
       <div className="admin-record-list">
         {records.map((item) => (
           <article className="admin-record" key={item.id}>
-            <div>
-              <span className="admin-record-date">{formatDate(item.reflection_date)}</span>
-              <b>{item.title || "无标题"}</b>
-              <p>{stripHtml(item.content).slice(0, 96)}</p>
-            </div>
-            <button type="button" onClick={() => deleteRecord(item.id)} disabled={isDeleting}>
-              删除
-            </button>
+            {editingId === item.id ? (
+              <form className="admin-record-edit" onSubmit={(event) => saveRecord(item, event)}>
+                <label>
+                  日期
+                  <input
+                    type="date"
+                    value={item.reflection_date}
+                    onChange={(event) => updateRecord(item.id, "reflection_date", event.target.value)}
+                    required
+                  />
+                </label>
+                <label>
+                  标题
+                  <input
+                    type="text"
+                    value={item.title || ""}
+                    onChange={(event) => updateRecord(item.id, "title", event.target.value)}
+                    placeholder="可不填"
+                  />
+                </label>
+                <label>
+                  心得
+                  <RichTextEditor
+                    value={item.content || ""}
+                    onChange={(value) => updateRecord(item.id, "content", value)}
+                    minRows={6}
+                  />
+                </label>
+                {item.image_urls?.length ? (
+                  <div className="admin-record-images">
+                    {item.image_urls.map((url) => (
+                      <span key={url}>
+                        <img src={url} alt="" />
+                        <button type="button" onClick={() => removeImage(item.id, url)}>
+                          移除
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <label>
+                  补充图片
+                  <input name="images" type="file" accept="image/*" multiple />
+                </label>
+                <div className="admin-record-actions">
+                  <button type="submit" disabled={savingId === item.id}>
+                    {savingId === item.id ? "保存中" : "保存修改"}
+                  </button>
+                  <button type="button" onClick={() => setEditingId("")}>
+                    取消
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div>
+                  <span className="admin-record-date">{formatDate(item.reflection_date)}</span>
+                  <b>{item.title || "无标题"}</b>
+                  <p>{stripHtml(item.content).slice(0, 96)}</p>
+                </div>
+                <div className="admin-record-actions">
+                  <button type="button" onClick={() => setEditingId(item.id)}>
+                    编辑
+                  </button>
+                  <button type="button" onClick={() => deleteRecord(item.id)} disabled={isDeleting}>
+                    删除
+                  </button>
+                </div>
+              </>
+            )}
           </article>
         ))}
       </div>

@@ -8,14 +8,11 @@ const blankReport = {
   period_start: "",
   period_end: "",
   status: "draft",
-  overview_lines: ["", "", ""],
+  overview_lines: [""],
   reflections: [
-    { title: "", example: "", analysis: "" },
     { title: "", example: "", analysis: "" }
   ],
   todo_items: [
-    { title: "", detail: "" },
-    { title: "", detail: "" },
     { title: "", detail: "" }
   ]
 };
@@ -28,7 +25,7 @@ function normalizeReport(report) {
   return {
     ...blankReport,
     ...report,
-    overview_lines: [...(report.overview_lines || []), "", "", ""].slice(0, 3),
+    overview_lines: report.overview_lines?.length ? report.overview_lines : blankReport.overview_lines,
     reflections: report.reflections?.length ? report.reflections : blankReport.reflections,
     todo_items: report.todo_items?.length ? report.todo_items : blankReport.todo_items
   };
@@ -65,6 +62,24 @@ export default function MonthlyReportEditor() {
     }));
   }
 
+  function addOverview() {
+    setReport((current) => ({
+      ...current,
+      overview_lines: [...current.overview_lines, ""]
+    }));
+  }
+
+  function removeOverview(index) {
+    if (report.overview_lines.length <= 1) {
+      return;
+    }
+
+    setReport((current) => ({
+      ...current,
+      overview_lines: current.overview_lines.filter((_, lineIndex) => lineIndex !== index)
+    }));
+  }
+
   function updateReflection(index, key, value) {
     setReport((current) => ({
       ...current,
@@ -84,10 +99,6 @@ export default function MonthlyReportEditor() {
   }
 
   function addReflection() {
-    if (report.reflections.length >= 4) {
-      return;
-    }
-
     setReport((current) => ({
       ...current,
       reflections: [...current.reflections, { title: "", example: "", analysis: "" }]
@@ -95,7 +106,7 @@ export default function MonthlyReportEditor() {
   }
 
   function removeReflection(index) {
-    if (report.reflections.length <= 2) {
+    if (report.reflections.length <= 1) {
       return;
     }
 
@@ -106,10 +117,6 @@ export default function MonthlyReportEditor() {
   }
 
   function addTodo() {
-    if (report.todo_items.length >= 5) {
-      return;
-    }
-
     setReport((current) => ({
       ...current,
       todo_items: [...current.todo_items, { title: "", detail: "" }]
@@ -117,7 +124,7 @@ export default function MonthlyReportEditor() {
   }
 
   function removeTodo(index) {
-    if (report.todo_items.length <= 3) {
+    if (report.todo_items.length <= 1) {
       return;
     }
 
@@ -130,11 +137,26 @@ export default function MonthlyReportEditor() {
   async function saveDraft() {
     setIsSaving(true);
     setStatus("");
+    const payload = {
+      ...report,
+      overview_lines: report.overview_lines.filter((line) => line.trim()),
+      reflections: report.reflections.filter(
+        (item) => item.title.trim() && item.example.trim() && item.analysis.trim()
+      ),
+      todo_items: report.todo_items.filter((item) => item.title.trim() && item.detail.trim()),
+      password
+    };
+
+    if (!payload.overview_lines.length || !payload.reflections.length || !payload.todo_items.length) {
+      setStatus("请至少保留并填写每个模块的一条内容");
+      setIsSaving(false);
+      return;
+    }
 
     const response = await fetch("/api/admin/monthly-report", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...report, password })
+      body: JSON.stringify(payload)
     });
     const result = await response.json().catch(() => ({}));
 
@@ -182,22 +204,31 @@ export default function MonthlyReportEditor() {
       </div>
 
       <div className="report-editor-group">
-        <h2>本月工作概况</h2>
+        <div className="editor-row">
+          <h2>本月工作概况</h2>
+          <button type="button" onClick={addOverview}>
+            添加
+          </button>
+        </div>
         {report.overview_lines.map((line, index) => (
-          <RichTextEditor
-            key={index}
-            value={line}
-            onChange={(value) => updateOverview(index, value)}
-            minRows={2}
-            placeholder={`概况 ${index + 1}`}
-          />
+          <div className="editor-card" key={index}>
+            <RichTextEditor
+              value={line}
+              onChange={(value) => updateOverview(index, value)}
+              minRows={2}
+              placeholder={`概况 ${index + 1}`}
+            />
+            <button type="button" onClick={() => removeOverview(index)} disabled={report.overview_lines.length <= 1}>
+              删除
+            </button>
+          </div>
         ))}
       </div>
 
       <div className="report-editor-group">
         <div className="editor-row">
           <h2>总结与反思</h2>
-          <button type="button" onClick={addReflection} disabled={report.reflections.length >= 4}>
+          <button type="button" onClick={addReflection}>
             添加
           </button>
         </div>
@@ -220,7 +251,7 @@ export default function MonthlyReportEditor() {
               minRows={3}
               placeholder="分析"
             />
-            <button type="button" onClick={() => removeReflection(index)} disabled={report.reflections.length <= 2}>
+            <button type="button" onClick={() => removeReflection(index)} disabled={report.reflections.length <= 1}>
               删除
             </button>
           </div>
@@ -230,7 +261,7 @@ export default function MonthlyReportEditor() {
       <div className="report-editor-group">
         <div className="editor-row">
           <h2>To do list</h2>
-          <button type="button" onClick={addTodo} disabled={report.todo_items.length >= 5}>
+          <button type="button" onClick={addTodo}>
             添加
           </button>
         </div>
@@ -247,7 +278,7 @@ export default function MonthlyReportEditor() {
               minRows={2}
               placeholder="内容"
             />
-            <button type="button" onClick={() => removeTodo(index)} disabled={report.todo_items.length <= 3}>
+            <button type="button" onClick={() => removeTodo(index)} disabled={report.todo_items.length <= 1}>
               删除
             </button>
           </div>
