@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RichTextEditor from "@/app/components/RichTextEditor";
+import PasswordDialog from "@/app/components/PasswordDialog";
 
 const blankReport = {
   id: null,
@@ -34,9 +35,9 @@ function normalizeReport(report) {
 export default function MonthlyReportEditor() {
   const [report, setReport] = useState(blankReport);
   const [drafts, setDrafts] = useState([]);
-  const [password, setPassword] = useState("");
   const [status, setStatus] = useState("加载中");
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   async function loadReports(activeId = "") {
     const response = await fetch("/api/admin/monthly-report");
@@ -148,7 +149,7 @@ export default function MonthlyReportEditor() {
     }));
   }
 
-  async function saveDraft() {
+  function requestSaveDraft() {
     setIsSaving(true);
     setStatus("");
     const payload = {
@@ -159,8 +160,7 @@ export default function MonthlyReportEditor() {
       reflections: report.reflections.filter(
         (item) => item.title.trim() && item.example.trim() && item.analysis.trim()
       ),
-      todo_items: report.todo_items.filter((item) => item.title.trim() && item.detail.trim()),
-      password
+      todo_items: report.todo_items.filter((item) => item.title.trim() && item.detail.trim())
     };
 
     if (!payload.overview_lines.length || !payload.reflections.length || !payload.todo_items.length) {
@@ -169,10 +169,18 @@ export default function MonthlyReportEditor() {
       return;
     }
 
+    setIsSaving(false);
+    setPendingAction({ type: "save", payload });
+  }
+
+  async function saveDraft(payload, password) {
+    setIsSaving(true);
+    setStatus("");
+
     const response = await fetch("/api/admin/monthly-report", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ ...payload, password })
     });
     const result = await response.json().catch(() => ({}));
 
@@ -185,21 +193,26 @@ export default function MonthlyReportEditor() {
     }
 
     setIsSaving(false);
+    setPendingAction(null);
   }
 
-  async function publishReport() {
+  function requestPublishReport() {
     if (!report.id) {
       setStatus("请先保存草稿");
       return;
     }
 
+    setPendingAction({ type: "publish", id: report.id });
+  }
+
+  async function publishReport(id, password) {
     setIsSaving(true);
     setStatus("");
 
     const response = await fetch("/api/admin/monthly-report/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: report.id, password })
+      body: JSON.stringify({ id, password })
     });
     const result = await response.json().catch(() => ({}));
 
@@ -212,6 +225,17 @@ export default function MonthlyReportEditor() {
     }
 
     setIsSaving(false);
+    setPendingAction(null);
+  }
+
+  async function confirmPendingAction(password) {
+    if (pendingAction?.type === "save") {
+      await saveDraft(pendingAction.payload, password);
+    }
+
+    if (pendingAction?.type === "publish") {
+      await publishReport(pendingAction.id, password);
+    }
   }
 
   return (
@@ -332,25 +356,23 @@ export default function MonthlyReportEditor() {
         ))}
       </div>
 
-      <label className="report-password">
-        上传密码
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="current-password"
-        />
-      </label>
-
       <div className="report-editor-actions">
-        <button type="button" onClick={saveDraft} disabled={isSaving}>
+        <button type="button" onClick={requestSaveDraft} disabled={isSaving}>
           保存草稿
         </button>
-        <button type="button" onClick={publishReport} disabled={isSaving || !report.id}>
+        <button type="button" onClick={requestPublishReport} disabled={isSaving || !report.id}>
           发布到展示页面
         </button>
       </div>
       {status ? <p className="form-status">{status}</p> : null}
+      <PasswordDialog
+        open={Boolean(pendingAction)}
+        title={pendingAction?.type === "publish" ? "发布到展示页面" : "保存月报草稿"}
+        confirmLabel={pendingAction?.type === "publish" ? "确认发布" : "确认保存"}
+        isBusy={isSaving}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={confirmPendingAction}
+      />
     </div>
   );
 }

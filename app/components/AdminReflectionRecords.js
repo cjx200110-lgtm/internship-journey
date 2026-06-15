@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RichTextEditor from "@/app/components/RichTextEditor";
+import PasswordDialog from "@/app/components/PasswordDialog";
 
 function stripHtml(value) {
   return (value || "").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
@@ -13,11 +14,11 @@ function formatDate(value) {
 
 export default function AdminReflectionRecords() {
   const [records, setRecords] = useState([]);
-  const [password, setPassword] = useState("");
   const [status, setStatus] = useState("加载中");
   const [isDeleting, setIsDeleting] = useState(false);
   const [savingId, setSavingId] = useState("");
   const [editingId, setEditingId] = useState("");
+  const [pendingAction, setPendingAction] = useState(null);
 
   async function loadRecords() {
     const response = await fetch("/api/reflections");
@@ -40,7 +41,7 @@ export default function AdminReflectionRecords() {
     };
   }, []);
 
-  async function deleteRecord(id) {
+  async function deleteRecord(id, password) {
     setIsDeleting(true);
     setStatus("");
 
@@ -79,8 +80,6 @@ export default function AdminReflectionRecords() {
 
   async function saveRecord(item, event) {
     event.preventDefault();
-    setSavingId(item.id);
-    setStatus("");
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -89,6 +88,27 @@ export default function AdminReflectionRecords() {
     formData.set("content", item.content || "");
     formData.set("reflection_date", item.reflection_date);
     formData.set("image_urls", JSON.stringify(item.image_urls || []));
+    setPendingAction({
+      type: "save",
+      id: item.id,
+      formData
+    });
+  }
+
+  async function confirmPendingAction(password) {
+    if (!pendingAction) {
+      return;
+    }
+
+    if (pendingAction.type === "delete") {
+      await deleteRecord(pendingAction.id, password);
+      setPendingAction(null);
+      return;
+    }
+
+    setSavingId(pendingAction.id);
+    setStatus("");
+    const formData = pendingAction.formData;
     formData.set("password", password);
 
     const response = await fetch("/api/reflections", {
@@ -108,19 +128,11 @@ export default function AdminReflectionRecords() {
     }
 
     setSavingId("");
+    setPendingAction(null);
   }
 
   return (
     <div className="admin-records">
-      <label>
-        上传密码
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="current-password"
-        />
-      </label>
       <div className="admin-record-list">
         {records.map((item) => (
           <article className="admin-record" key={item.id}>
@@ -188,7 +200,11 @@ export default function AdminReflectionRecords() {
                   <button type="button" onClick={() => setEditingId(item.id)}>
                     编辑
                   </button>
-                  <button type="button" onClick={() => deleteRecord(item.id)} disabled={isDeleting}>
+                  <button
+                    type="button"
+                    onClick={() => setPendingAction({ type: "delete", id: item.id })}
+                    disabled={isDeleting}
+                  >
                     删除
                   </button>
                 </div>
@@ -198,6 +214,14 @@ export default function AdminReflectionRecords() {
         ))}
       </div>
       {status ? <p className="form-status">{status}</p> : null}
+      <PasswordDialog
+        open={Boolean(pendingAction)}
+        title={pendingAction?.type === "delete" ? "删除上传记录" : "保存修改"}
+        confirmLabel={pendingAction?.type === "delete" ? "确认删除" : "确认保存"}
+        isBusy={isDeleting || Boolean(savingId)}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={confirmPendingAction}
+      />
     </div>
   );
 }

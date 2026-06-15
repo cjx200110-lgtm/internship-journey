@@ -814,6 +814,74 @@ main {
   font-weight: 500;
 }
 
+.password-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(18, 18, 18, 0.32);
+}
+
+.password-dialog {
+  width: min(360px, 100%);
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+  box-shadow: var(--shadow);
+}
+
+.password-dialog h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+
+.password-dialog input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 400;
+  outline: none;
+}
+
+.password-dialog input:focus {
+  border-color: #111;
+}
+
+.password-dialog div {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.password-dialog button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 16px;
+  background: #111;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.password-dialog button + button {
+  background: #8f8d88;
+}
+
+.password-dialog button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .report-editor,
 .report-editor-group,
 .editor-card,
