@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdminPassword } from "@/lib/adminAuth";
+import { IMAGE_BUCKET, getImagePaths, uploadReflectionImages } from "@/lib/reflectionImages";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 const CreateReflectionSchema = z.object({
   title: z.string().trim().optional().nullable(),
   content: z.string().trim().min(1),
-  reflection_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+  reflection_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  image_urls: z.array(z.string().url()).optional()
 });
 
 const UpdateReflectionSchema = CreateReflectionSchema.extend({
@@ -14,71 +16,7 @@ const UpdateReflectionSchema = CreateReflectionSchema.extend({
   image_urls: z.array(z.string().url()).optional()
 });
 
-const IMAGE_BUCKET = "reflection-images";
-const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const MAX_IMAGE_COUNT = 6;
-
-function getExtension(file) {
-  const fromName = file.name?.split(".").pop()?.toLowerCase();
-  if (fromName && /^[a-z0-9]+$/.test(fromName)) {
-    return fromName;
-  }
-
-  const fromType = file.type?.split("/").pop()?.toLowerCase();
-  return fromType && /^[a-z0-9]+$/.test(fromType) ? fromType : "png";
-}
-
-async function ensureImageBucket(supabase) {
-  const { error } = await supabase.storage.createBucket(IMAGE_BUCKET, {
-    public: true,
-    fileSizeLimit: MAX_IMAGE_SIZE,
-    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"]
-  });
-
-  if (error && !/already exists/i.test(error.message)) {
-    throw error;
-  }
-}
-
-async function uploadImages(supabase, files) {
-  const imageUrls = [];
-
-  if (!files.length) {
-    return imageUrls;
-  }
-
-  await ensureImageBucket(supabase);
-
-  for (const file of files) {
-    if (!file.type?.startsWith("image/")) {
-      throw new Error("只能上传图片文件。");
-    }
-
-    if (file.size > MAX_IMAGE_SIZE) {
-      throw new Error("单张图片不能超过 8MB。");
-    }
-
-    const extension = getExtension(file);
-    const path = `${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${extension}`;
-    const bytes = await file.arrayBuffer();
-
-    const { error } = await supabase.storage
-      .from(IMAGE_BUCKET)
-      .upload(path, bytes, {
-        contentType: file.type,
-        upsert: false
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path);
-    imageUrls.push(data.publicUrl);
-  }
-
-  return imageUrls;
-}
 
 async function parseRequest(request) {
   const contentType = request.headers.get("content-type") || "";
@@ -97,7 +35,8 @@ async function parseRequest(request) {
       payload: CreateReflectionSchema.parse({
         title: formData.get("title") || null,
         content: formData.get("content"),
-        reflection_date: formData.get("reflection_date")
+        reflection_date: formData.get("reflection_date"),
+        image_urls: JSON.parse(String(formData.get("image_urls") || "[]"))
       }),
       password: String(formData.get("password") || ""),
       files
@@ -169,7 +108,8 @@ export async function POST(request) {
     const { payload, password, files } = await parseRequest(request);
     assertAdminPassword(password);
     const supabase = getSupabaseAdmin();
-    const imageUrls = await uploadImages(supabase, files);
+    const newImageUrls = await uploadReflectionImages(supabase, files);
+    const imageUrls = [...(payload.image_urls || []), ...newImageUrls];
 
     const { data, error } = await supabase
       .from("reflections")
@@ -198,7 +138,7 @@ export async function PUT(request) {
     const { payload, password, files } = await parseUpdateRequest(request);
     assertAdminPassword(password);
     const supabase = getSupabaseAdmin();
-    const newImageUrls = await uploadImages(supabase, files);
+    const newImageUrls = await uploadReflectionImages(supabase, files);
     const imageUrls = [...(payload.image_urls || []), ...newImageUrls];
 
     const { data, error } = await supabase
@@ -250,17 +190,7 @@ export async function DELETE(request) {
       throw error;
     }
 
-    const imagePaths = (reflection.image_urls || [])
-      .map((url) => {
-        try {
-          const marker = `/storage/v1/object/public/${IMAGE_BUCKET}/`;
-          const index = url.indexOf(marker);
-          return index >= 0 ? decodeURIComponent(url.slice(index + marker.length)) : null;
-        } catch {
-          return null;
-        }
-      })
-      .filter(Boolean);
+    const imagePaths = getImagePaths(reflection.image_urls);
 
     if (imagePaths.length) {
       await supabase.storage.from(IMAGE_BUCKET).remove(imagePaths);

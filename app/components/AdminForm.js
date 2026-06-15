@@ -4,8 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import RichTextEditor from "@/app/components/RichTextEditor";
 import PasswordDialog from "@/app/components/PasswordDialog";
 
-const DRAFT_STORAGE_KEY = "jessie-reflection-upload-drafts";
-
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -19,17 +17,16 @@ export default function AdminForm() {
   const [reflectionDate, setReflectionDate] = useState(today());
   const [content, setContent] = useState("");
   const [activeDraftId, setActiveDraftId] = useState("");
+  const [activeDraftImageUrls, setActiveDraftImageUrls] = useState([]);
   const [imageCount, setImageCount] = useState(0);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
   const formRef = useRef(null);
 
   useEffect(() => {
-    function handleDraftSelected(event) {
-      const draft = event.detail;
-
+    function applyDraft(draft) {
       if (!draft) {
         return;
       }
@@ -37,10 +34,27 @@ export default function AdminForm() {
       setTitle(draft.title || "");
       setReflectionDate(draft.reflection_date || today());
       setContent(draft.content || "");
-      setActiveDraftId(draft.id);
+      setActiveDraftId(draft.id || "");
+      setActiveDraftImageUrls(draft.image_urls || []);
       setImageCount(0);
       setFileInputKey((value) => value + 1);
-      setStatus("已载入草稿，图片需重新选择");
+      setStatus("已载入草稿");
+    }
+
+    const selectedDraft = sessionStorage.getItem("selected-reflection-draft");
+
+    if (selectedDraft) {
+      try {
+        applyDraft(JSON.parse(selectedDraft));
+      } catch {
+        setStatus("草稿载入失败");
+      }
+
+      sessionStorage.removeItem("selected-reflection-draft");
+    }
+
+    function handleDraftSelected(event) {
+      applyDraft(event.detail);
     }
 
     window.addEventListener("reflection-draft-selected", handleDraftSelected);
@@ -50,86 +64,116 @@ export default function AdminForm() {
     };
   }, []);
 
-  function getDrafts() {
-    const savedDrafts = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || "[]");
-    return Array.isArray(savedDrafts) ? savedDrafts : [];
-  }
-
-  function persistDrafts(nextDrafts) {
-    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(nextDrafts));
-    window.dispatchEvent(new Event("reflection-drafts-updated"));
-  }
-
   function resetForm() {
     setTitle("");
     setReflectionDate(today());
     setContent("");
+    setActiveDraftId("");
+    setActiveDraftImageUrls([]);
     setImageCount(0);
     setFileInputKey((value) => value + 1);
-    setActiveDraftId("");
   }
 
-  function saveDraft() {
+  function removeDraftImage(url) {
+    setActiveDraftImageUrls((current) => current.filter((imageUrl) => imageUrl !== url));
+  }
+
+  function requestSaveDraft() {
     const plainText = stripHtml(content);
 
-    if (!title.trim() && !plainText) {
-      setStatus("请先填写标题或心得内容");
+    if (!title.trim() && !plainText && !imageCount && !activeDraftImageUrls.length) {
+      setStatus("请先填写标题、心得内容或选择图片");
       return;
     }
 
-    const draft = {
-      id: activeDraftId || crypto.randomUUID(),
-      title: title.trim(),
-      reflection_date: reflectionDate,
-      content,
-      updated_at: new Date().toISOString()
-    };
-    const drafts = getDrafts();
-    const nextDrafts = activeDraftId
-      ? drafts.map((item) => (item.id === activeDraftId ? draft : item))
-      : [draft, ...drafts];
+    setPendingAction({ type: "draft" });
+  }
 
-    persistDrafts(nextDrafts);
-    setActiveDraftId(draft.id);
-    setStatus("草稿已保存");
+  async function saveDraft(password) {
+    setIsSubmitting(true);
+    setStatus("");
+
+    const formData = new FormData(formRef.current);
+    formData.set("id", activeDraftId);
+    formData.set("title", title.trim());
+    formData.set("content", content);
+    formData.set("reflection_date", reflectionDate);
+    formData.set("image_urls", JSON.stringify(activeDraftImageUrls));
+    formData.set("password", password);
+
+    const response = await fetch("/api/reflection-drafts", {
+      method: "POST",
+      body: formData
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (response.ok) {
+      setActiveDraftId(result.draft.id);
+      setActiveDraftImageUrls(result.draft.image_urls || []);
+      setImageCount(0);
+      setFileInputKey((value) => value + 1);
+      setStatus("草稿已保存");
+      window.dispatchEvent(new Event("reflection-drafts-updated"));
+    } else {
+      setStatus(result.error || "草稿保存失败");
+    }
+
+    setIsSubmitting(false);
+    setPendingAction(null);
   }
 
   async function submitReflection(password) {
     setIsSubmitting(true);
     setStatus("");
 
-    const form = formRef.current;
-    const formData = new FormData(form);
+    const formData = new FormData(formRef.current);
     formData.set("title", title.trim());
     formData.set("content", content);
     formData.set("reflection_date", reflectionDate);
+    formData.set("image_urls", JSON.stringify(activeDraftImageUrls));
     formData.set("password", password);
 
     const response = await fetch("/api/reflections", {
       method: "POST",
       body: formData
     });
+    const result = await response.json().catch(() => ({}));
 
     if (response.ok) {
       if (activeDraftId) {
-        const drafts = getDrafts();
-        persistDrafts(drafts.filter((item) => item.id !== activeDraftId));
+        await fetch("/api/reflection-drafts", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: activeDraftId, password, keep_images: true })
+        });
+        window.dispatchEvent(new Event("reflection-drafts-updated"));
       }
+
       resetForm();
-      setStatus("已保存");
+      setStatus("已上传");
       window.dispatchEvent(new Event("reflection-records-updated"));
     } else {
-      const result = await response.json().catch(() => ({}));
-      setStatus(result.error || "保存失败");
+      setStatus(result.error || "上传失败");
     }
 
     setIsSubmitting(false);
-    setShowPasswordDialog(false);
+    setPendingAction(null);
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    setShowPasswordDialog(true);
+    setPendingAction({ type: "upload" });
+  }
+
+  function confirmPendingAction(password) {
+    if (pendingAction?.type === "draft") {
+      saveDraft(password);
+      return;
+    }
+
+    if (pendingAction?.type === "upload") {
+      submitReflection(password);
+    }
   }
 
   return (
@@ -178,21 +222,35 @@ export default function AdminForm() {
             {imageCount > 0 ? `已选择 ${imageCount} 张图片` : "可选择多张图片"}
           </span>
         </label>
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "保存中" : "上传日常心得"}
-        </button>
-        <button type="button" className="secondary-button" onClick={saveDraft} disabled={isSubmitting}>
-          存为草稿
-        </button>
+        {activeDraftImageUrls.length ? (
+          <div className="reflection-draft-image-list">
+            {activeDraftImageUrls.map((url) => (
+              <span key={url}>
+                <img src={url} alt="" />
+                <button type="button" onClick={() => removeDraftImage(url)}>
+                  移除
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <div className="admin-form-actions">
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "提交中" : "上传日常心得"}
+          </button>
+          <button type="button" className="secondary-button" onClick={requestSaveDraft} disabled={isSubmitting}>
+            存为草稿
+          </button>
+        </div>
         {status ? <p className="form-status">{status}</p> : null}
       </form>
       <PasswordDialog
-        open={showPasswordDialog}
-        title="上传日常心得"
-        confirmLabel="确认上传"
+        open={Boolean(pendingAction)}
+        title={pendingAction?.type === "draft" ? "保存日常心得草稿" : "上传日常心得"}
+        confirmLabel={pendingAction?.type === "draft" ? "确认保存" : "确认上传"}
         isBusy={isSubmitting}
-        onCancel={() => setShowPasswordDialog(false)}
-        onConfirm={submitReflection}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={confirmPendingAction}
       />
     </>
   );

@@ -121,13 +121,7 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
   }
 
   function handleBeforeInput(event) {
-    const hasActiveFormat =
-      activeFormatRef.current.bold ||
-      activeFormatRef.current.underline ||
-      activeFormatRef.current.strikeThrough ||
-      activeFormatRef.current.fontName;
-
-    if (hasActiveFormat || event.inputType !== "insertText" || !event.data) {
+    if (event.inputType !== "insertText" || !event.data) {
       return;
     }
 

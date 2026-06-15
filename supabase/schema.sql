@@ -13,6 +13,34 @@ alter table public.reflections
 create index if not exists reflections_reflection_date_idx
   on public.reflections (reflection_date desc, created_at desc);
 
+create table if not exists public.reflection_drafts (
+  id uuid primary key default gen_random_uuid(),
+  title text,
+  content text not null default '',
+  reflection_date date not null,
+  image_urls jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.reflection_drafts
+  add column if not exists title text;
+
+alter table public.reflection_drafts
+  add column if not exists content text not null default '';
+
+alter table public.reflection_drafts
+  add column if not exists reflection_date date not null default current_date;
+
+alter table public.reflection_drafts
+  add column if not exists image_urls jsonb not null default '[]'::jsonb;
+
+alter table public.reflection_drafts
+  add column if not exists updated_at timestamptz not null default now();
+
+create index if not exists reflection_drafts_updated_at_idx
+  on public.reflection_drafts (updated_at desc);
+
 create table if not exists public.monthly_reports (
   id uuid primary key default gen_random_uuid(),
   period_start date not null,
