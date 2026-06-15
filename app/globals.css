@@ -691,7 +691,6 @@ main {
 .reflection-draft-box {
   display: grid;
   gap: 12px;
-  margin-top: 22px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -761,6 +760,22 @@ main {
 
 .reflection-draft-item button + button {
   background: #8f8d88;
+}
+
+.admin-draft-modules {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-draft-module {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-draft-module > h2 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0;
 }
 
 .admin-records {

@@ -18,7 +18,6 @@ export default function AdminForm() {
   const [title, setTitle] = useState("");
   const [reflectionDate, setReflectionDate] = useState(today());
   const [content, setContent] = useState("");
-  const [drafts, setDrafts] = useState([]);
   const [activeDraftId, setActiveDraftId] = useState("");
   const [imageCount, setImageCount] = useState(0);
   const [fileInputKey, setFileInputKey] = useState(0);
@@ -28,13 +27,37 @@ export default function AdminForm() {
   const formRef = useRef(null);
 
   useEffect(() => {
-    const savedDrafts = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || "[]");
-    setDrafts(Array.isArray(savedDrafts) ? savedDrafts : []);
+    function handleDraftSelected(event) {
+      const draft = event.detail;
+
+      if (!draft) {
+        return;
+      }
+
+      setTitle(draft.title || "");
+      setReflectionDate(draft.reflection_date || today());
+      setContent(draft.content || "");
+      setActiveDraftId(draft.id);
+      setImageCount(0);
+      setFileInputKey((value) => value + 1);
+      setStatus("已载入草稿，图片需重新选择");
+    }
+
+    window.addEventListener("reflection-draft-selected", handleDraftSelected);
+
+    return () => {
+      window.removeEventListener("reflection-draft-selected", handleDraftSelected);
+    };
   }, []);
 
+  function getDrafts() {
+    const savedDrafts = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || "[]");
+    return Array.isArray(savedDrafts) ? savedDrafts : [];
+  }
+
   function persistDrafts(nextDrafts) {
-    setDrafts(nextDrafts);
     localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(nextDrafts));
+    window.dispatchEvent(new Event("reflection-drafts-updated"));
   }
 
   function resetForm() {
@@ -61,6 +84,7 @@ export default function AdminForm() {
       content,
       updated_at: new Date().toISOString()
     };
+    const drafts = getDrafts();
     const nextDrafts = activeDraftId
       ? drafts.map((item) => (item.id === activeDraftId ? draft : item))
       : [draft, ...drafts];
@@ -68,26 +92,6 @@ export default function AdminForm() {
     persistDrafts(nextDrafts);
     setActiveDraftId(draft.id);
     setStatus("草稿已保存");
-  }
-
-  function loadDraft(draft) {
-    setTitle(draft.title || "");
-    setReflectionDate(draft.reflection_date || today());
-    setContent(draft.content || "");
-    setActiveDraftId(draft.id);
-    setImageCount(0);
-    setFileInputKey((value) => value + 1);
-    setStatus("已载入草稿，图片需重新选择");
-  }
-
-  function deleteDraft(id) {
-    persistDrafts(drafts.filter((item) => item.id !== id));
-
-    if (activeDraftId === id) {
-      setActiveDraftId("");
-    }
-
-    setStatus("草稿已删除");
   }
 
   async function submitReflection(password) {
@@ -108,6 +112,7 @@ export default function AdminForm() {
 
     if (response.ok) {
       if (activeDraftId) {
+        const drafts = getDrafts();
         persistDrafts(drafts.filter((item) => item.id !== activeDraftId));
       }
       resetForm();
@@ -181,33 +186,6 @@ export default function AdminForm() {
         </button>
         {status ? <p className="form-status">{status}</p> : null}
       </form>
-      <div className="reflection-draft-box">
-        <h2>日常心得草稿</h2>
-        {drafts.length ? (
-          <div className="reflection-draft-list">
-            {drafts.map((draft) => (
-              <article className="reflection-draft-item" key={draft.id}>
-                <div>
-                  <span>{draft.reflection_date?.replaceAll("-", " / ")}</span>
-                  <b>{draft.title || "无标题"}</b>
-                  <p>{stripHtml(draft.content).slice(0, 72)}</p>
-                </div>
-                <div>
-                  <button type="button" onClick={() => loadDraft(draft)}>
-                    继续编辑
-                  </button>
-                  <button type="button" onClick={() => deleteDraft(draft.id)}>
-                    删除
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="form-status">暂无草稿</p>
-        )}
-        <p className="file-help">草稿保存文字内容；图片需在正式上传前重新选择。</p>
-      </div>
       <PasswordDialog
         open={showPasswordDialog}
         title="上传日常心得"

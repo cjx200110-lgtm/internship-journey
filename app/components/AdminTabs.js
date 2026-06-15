@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminForm from "@/app/components/AdminForm";
+import AdminDraftBox from "@/app/components/AdminDraftBox";
 import AdminUploadRecords from "@/app/components/AdminUploadRecords";
-import MonthlyReportEditor from "@/app/components/MonthlyReportEditor";
 
 const tabs = [
   { id: "upload", label: "日常心得上传" },
@@ -13,6 +13,20 @@ const tabs = [
 
 export default function AdminTabs() {
   const [activeTab, setActiveTab] = useState("upload");
+
+  useEffect(() => {
+    function handleTabSelected(event) {
+      if (event.detail) {
+        setActiveTab(event.detail);
+      }
+    }
+
+    window.addEventListener("admin-tab-selected", handleTabSelected);
+
+    return () => {
+      window.removeEventListener("admin-tab-selected", handleTabSelected);
+    };
+  }, []);
 
   return (
     <div className="admin-tabs">
@@ -49,7 +63,7 @@ export default function AdminTabs() {
         {activeTab === "drafts" ? (
           <>
             <h1>草稿箱</h1>
-            <MonthlyReportEditor />
+            <AdminDraftBox />
           </>
         ) : null}
       </section>
