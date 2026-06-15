@@ -430,6 +430,7 @@ main {
 }
 
 .daily-entry summary {
+  position: relative;
   list-style: none;
   cursor: pointer;
   display: grid;
@@ -466,7 +467,7 @@ main {
 }
 
 .daily-entry[open] .daily-preview {
-  display: none;
+  visibility: hidden;
 }
 
 .daily-arrow {
@@ -494,6 +495,9 @@ main {
 }
 
 .daily-entry[open] .daily-arrow {
+  position: absolute;
+  right: 24px;
+  top: 22px;
   transform: rotate(90deg);
 }
 
@@ -505,7 +509,7 @@ main {
   font-size: 15px;
 }
 
-.daily-full b {
+.daily-full-title {
   display: block;
   color: #222;
   margin-bottom: 6px;
@@ -521,14 +525,17 @@ main {
   white-space: normal;
 }
 
-.daily-full .rich-content p,
-.daily-full .rich-content div {
+.daily-full .rich-content b,
+.daily-full .rich-content strong {
   display: inline;
+  color: inherit;
+  margin: 0;
 }
 
-.daily-full .rich-content p:not(:last-child)::after,
-.daily-full .rich-content div:not(:last-child)::after {
-  content: " ";
+.daily-full .rich-content p,
+.daily-full .rich-content div {
+  display: block;
+  margin: 18px 0 0;
 }
 
 .daily-images {

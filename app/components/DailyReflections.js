@@ -33,7 +33,7 @@ export default function DailyReflections({ reflections }) {
             <span className="daily-arrow" aria-hidden="true" />
           </summary>
           <div className="daily-full">
-            {item.title ? <b>{item.title}</b> : null}
+            {item.title ? <b className="daily-full-title">{item.title}</b> : null}
             <div
               className="rich-content"
               dangerouslySetInnerHTML={{ __html: item.content }}
