@@ -995,6 +995,13 @@ main {
   letter-spacing: 0;
 }
 
+.password-dialog label {
+  display: grid;
+  gap: 8px;
+  color: #333;
+  font-weight: 400;
+}
+
 .password-dialog input {
   width: 100%;
   border: 1px solid var(--line);

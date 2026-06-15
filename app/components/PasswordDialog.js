@@ -31,14 +31,18 @@ export default function PasswordDialog({
     <div className="password-dialog-backdrop" role="presentation">
       <form className="password-dialog" onSubmit={handleSubmit}>
         <h2>{title}</h2>
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="current-password"
-          autoFocus
-          required
-        />
+        <label>
+          上传密码
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            placeholder="请输入上传密码"
+            autoFocus
+            required
+          />
+        </label>
         <div>
           <button type="submit" disabled={isBusy}>
             {isBusy ? "提交中" : confirmLabel}
