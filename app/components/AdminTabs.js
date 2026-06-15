@@ -6,8 +6,8 @@ import AdminReflectionRecords from "@/app/components/AdminReflectionRecords";
 import MonthlyReportEditor from "@/app/components/MonthlyReportEditor";
 
 const tabs = [
-  { id: "upload", label: "上传" },
-  { id: "records", label: "记录" },
+  { id: "upload", label: "日常心得上传" },
+  { id: "records", label: "上传记录" },
   { id: "drafts", label: "草稿箱" }
 ];
 
@@ -34,7 +34,7 @@ export default function AdminTabs() {
       <section className="admin-panel" role="tabpanel">
         {activeTab === "upload" ? (
           <>
-            <h1>上传日常心得</h1>
+            <h1>日常心得上传</h1>
             <AdminForm />
           </>
         ) : null}
