@@ -690,6 +690,39 @@ main {
   font-weight: 400;
 }
 
+.admin-record-tabs,
+.monthly-records {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-record-tab-list {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf6;
+}
+
+.admin-record-tab-list button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 16px;
+  background: transparent;
+  color: #4f4f4f;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-record-tab-list button.active {
+  background: #111;
+  color: #fff;
+}
+
 .admin-records label {
   display: grid;
   gap: 8px;
@@ -756,6 +789,65 @@ main {
 .admin-record-full .rich-content p:first-child,
 .admin-record-full .rich-content div:first-child {
   margin-top: 0;
+}
+
+.monthly-record-full {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 18px;
+  color: #505050;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.monthly-record-full section {
+  display: grid;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.monthly-record-full h3 {
+  margin: 0;
+  color: #202020;
+  font-size: 17px;
+}
+
+.monthly-record-full p {
+  margin: 0;
+}
+
+.monthly-record-reflection,
+.monthly-record-todo {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdf9;
+}
+
+.monthly-record-reflection b,
+.monthly-record-todo b {
+  color: #202020;
+  font-size: 15px;
+}
+
+.monthly-record-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.monthly-record-text > span:first-child {
+  flex: none;
+  color: #202020;
+  font-weight: 800;
+}
+
+.monthly-record-full .rich-content,
+.monthly-record-full .rich-content b,
+.monthly-record-full .rich-content strong {
+  display: inline;
 }
 
 .admin-record-date {

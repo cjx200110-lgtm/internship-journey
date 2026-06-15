@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import AdminForm from "@/app/components/AdminForm";
-import AdminReflectionRecords from "@/app/components/AdminReflectionRecords";
+import AdminUploadRecords from "@/app/components/AdminUploadRecords";
 import MonthlyReportEditor from "@/app/components/MonthlyReportEditor";
 
 const tabs = [
@@ -42,7 +42,7 @@ export default function AdminTabs() {
         {activeTab === "records" ? (
           <>
             <h1>上传记录</h1>
-            <AdminReflectionRecords />
+            <AdminUploadRecords />
           </>
         ) : null}
 
