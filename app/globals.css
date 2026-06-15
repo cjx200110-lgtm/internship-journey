@@ -465,6 +465,10 @@ main {
   -webkit-box-orient: vertical;
 }
 
+.daily-entry[open] .daily-preview {
+  display: none;
+}
+
 .daily-arrow {
   position: relative;
   width: 42px;
@@ -510,6 +514,21 @@ main {
 .daily-full p {
   margin: 0;
   white-space: pre-wrap;
+}
+
+.daily-full .rich-content {
+  display: block;
+  white-space: normal;
+}
+
+.daily-full .rich-content p,
+.daily-full .rich-content div {
+  display: inline;
+}
+
+.daily-full .rich-content p:not(:last-child)::after,
+.daily-full .rich-content div:not(:last-child)::after {
+  content: " ";
 }
 
 .daily-images {
@@ -577,7 +596,7 @@ main {
   display: grid;
   gap: 8px;
   color: #333;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .admin-form input,
@@ -638,6 +657,7 @@ main {
 .report-password {
   display: grid;
   gap: 12px;
+  font-weight: 400;
 }
 
 .report-editor {

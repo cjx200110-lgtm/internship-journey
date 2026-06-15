@@ -30,6 +30,13 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
     syncValue();
   }
 
+  function handlePaste(event) {
+    event.preventDefault();
+    const text = event.clipboardData.getData("text/plain");
+    document.execCommand("insertText", false, text);
+    syncValue();
+  }
+
   return (
     <div className="rich-text">
       <div className="rich-text-toolbar" aria-label="文本格式工具栏">
@@ -64,6 +71,7 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
         contentEditable
         data-placeholder={placeholder}
         onInput={syncValue}
+        onPaste={handlePaste}
         style={{ minHeight: `${minRows * 34}px` }}
         suppressContentEditableWarning
       />
