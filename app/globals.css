@@ -1141,6 +1141,18 @@ main {
   overflow: auto;
 }
 
+.rich-text-editor,
+.rich-text-editor span,
+.rich-text-editor div,
+.rich-text-editor p {
+  font-weight: 400;
+}
+
+.rich-text-editor b,
+.rich-text-editor strong {
+  font-weight: 800;
+}
+
 .rich-text-editor:empty::before {
   content: attr(data-placeholder);
   color: #8c8c8c;
