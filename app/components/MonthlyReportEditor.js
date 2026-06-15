@@ -33,25 +33,39 @@ function normalizeReport(report) {
 
 export default function MonthlyReportEditor() {
   const [report, setReport] = useState(blankReport);
+  const [drafts, setDrafts] = useState([]);
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("加载中");
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    async function loadReport() {
-      const response = await fetch("/api/admin/monthly-report");
-      const result = await response.json().catch(() => ({}));
+  async function loadReports(activeId = "") {
+    const response = await fetch("/api/admin/monthly-report");
+    const result = await response.json().catch(() => ({}));
 
-      if (response.ok) {
-        setReport(normalizeReport(result.report));
-        setStatus(result.report ? "已加载月报草稿" : "暂无 AI 月报草稿");
-      } else {
-        setStatus(result.error || "月报加载失败");
-      }
+    if (response.ok) {
+      const nextDrafts = result.drafts || [];
+      const activeReport =
+        nextDrafts.find((item) => item.id === activeId) ||
+        (result.reports || []).find((item) => item.id === activeId) ||
+        result.report ||
+        null;
+
+      setDrafts(nextDrafts);
+      setReport(normalizeReport(activeReport));
+      setStatus(activeReport ? "已加载月报草稿" : "暂无月报草稿");
+    } else {
+      setStatus(result.error || "月报加载失败");
     }
+  }
 
-    loadReport();
+  useEffect(() => {
+    loadReports();
   }, []);
+
+  function newDraft() {
+    setReport(normalizeReport(null));
+    setStatus("已新建空白草稿");
+  }
 
   function updateOverview(index, value) {
     setReport((current) => ({
@@ -139,6 +153,8 @@ export default function MonthlyReportEditor() {
     setStatus("");
     const payload = {
       ...report,
+      period_start: report.period_start || undefined,
+      period_end: report.period_end || undefined,
       overview_lines: report.overview_lines.filter((line) => line.trim()),
       reflections: report.reflections.filter(
         (item) => item.title.trim() && item.example.trim() && item.analysis.trim()
@@ -162,6 +178,7 @@ export default function MonthlyReportEditor() {
 
     if (response.ok) {
       setReport(normalizeReport(result.report));
+      await loadReports(result.report.id);
       setStatus("草稿已保存");
     } else {
       setStatus(result.error || "草稿保存失败");
@@ -188,6 +205,7 @@ export default function MonthlyReportEditor() {
 
     if (response.ok) {
       setReport(normalizeReport(result.report));
+      await loadReports(result.report.id);
       setStatus("已发布到展示页面");
     } else {
       setStatus(result.error || "发布失败");
@@ -198,6 +216,35 @@ export default function MonthlyReportEditor() {
 
   return (
     <div className="report-editor">
+      <div className="report-draft-box">
+        <div className="editor-row">
+          <h2>草稿箱</h2>
+          <button type="button" onClick={newDraft}>
+            新建草稿
+          </button>
+        </div>
+        {drafts.length ? (
+          <div className="report-draft-list">
+            {drafts.map((draft) => (
+              <button
+                type="button"
+                className={draft.id === report.id ? "active" : ""}
+                onClick={() => {
+                  setReport(normalizeReport(draft));
+                  setStatus("已切换草稿");
+                }}
+                key={draft.id}
+              >
+                <span>{draft.period_start} 至 {draft.period_end}</span>
+                <small>{draft.updated_at ? `更新于 ${draft.updated_at.slice(0, 10)}` : "未更新"}</small>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="form-status">暂无草稿</p>
+        )}
+      </div>
+
       <div className="report-editor-meta">
         <span>{report.period_start && report.period_end ? `${report.period_start} 至 ${report.period_end}` : "当前月报"}</span>
         <span>{report.status === "published" ? "已发布" : "草稿"}</span>

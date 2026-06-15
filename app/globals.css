@@ -827,6 +827,55 @@ main {
   gap: 20px;
 }
 
+.report-draft-box {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf6;
+}
+
+.report-draft-box h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.report-draft-list {
+  display: grid;
+  gap: 10px;
+}
+
+.report-draft-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.report-draft-list button.active {
+  border-color: #111;
+  box-shadow: inset 0 0 0 1px #111;
+}
+
+.report-draft-list span {
+  font-weight: 800;
+}
+
+.report-draft-list small {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .report-editor-meta,
 .editor-row,
 .report-editor-actions {
@@ -890,6 +939,26 @@ main {
 .report-editor-actions {
   justify-content: flex-start;
   flex-wrap: wrap;
+}
+
+.report-editor .report-draft-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.report-editor .report-draft-list button.active {
+  border-color: #111;
+  box-shadow: inset 0 0 0 1px #111;
 }
 
 .rich-text {

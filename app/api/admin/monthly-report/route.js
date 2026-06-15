@@ -32,15 +32,20 @@ export async function GET() {
       .from("monthly_reports")
       .select("id,period_start,period_end,overview_lines,reflections,todo_items,status,published_at,created_at,updated_at")
       .order("period_end", { ascending: false })
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order("updated_at", { ascending: false });
 
     if (error) {
       throw error;
     }
 
-    return NextResponse.json({ report: data });
+    const reports = data || [];
+    const activeReport = reports.find((report) => report.status === "draft") || reports[0] || null;
+
+    return NextResponse.json({
+      report: activeReport,
+      reports,
+      drafts: reports.filter((report) => report.status === "draft")
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
