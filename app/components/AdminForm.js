@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import RichTextEditor from "@/app/components/RichTextEditor";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -72,12 +73,11 @@ export default function AdminForm() {
       </label>
       <label>
         心得
-        <textarea
-          name="content"
+        <RichTextEditor
           value={content}
-          onChange={(event) => setContent(event.target.value)}
-          rows={10}
-          required
+          onChange={setContent}
+          minRows={8}
+          placeholder="写下今天的心得"
         />
       </label>
       <label>

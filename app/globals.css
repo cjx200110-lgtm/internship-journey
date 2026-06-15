@@ -359,14 +359,16 @@ main {
   margin-bottom: 10px;
 }
 
-.reflection-item p {
+.reflection-item p,
+.reflection-text {
   margin: 0;
   color: #555;
   line-height: 1.85;
   font-size: 15px;
 }
 
-.reflection-item p + p {
+.reflection-item p + p,
+.reflection-text + .reflection-text {
   margin-top: 8px;
 }
 
@@ -586,6 +588,7 @@ main {
   padding: 12px 14px;
   background: #fff;
   color: var(--text);
+  font-weight: 400;
   outline: none;
 }
 
@@ -670,6 +673,7 @@ main {
   outline: none;
   background: #fff;
   color: var(--text);
+  font-weight: 400;
 }
 
 .report-editor textarea {
@@ -703,6 +707,87 @@ main {
 .report-editor-actions {
   justify-content: flex-start;
   flex-wrap: wrap;
+}
+
+.rich-text {
+  display: grid;
+  gap: 8px;
+}
+
+.rich-text-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rich-text-toolbar button,
+.report-editor .rich-text-toolbar button {
+  width: 36px;
+  height: 34px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0;
+  background: #fff;
+  color: #222;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.rich-text-toolbar button:nth-child(2) {
+  text-decoration: underline;
+}
+
+.rich-text-toolbar button:nth-child(3) {
+  text-decoration: line-through;
+}
+
+.rich-text-toolbar select {
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+  color: #222;
+  font-weight: 400;
+}
+
+.rich-text-editor {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 400;
+  line-height: 1.75;
+  outline: none;
+  overflow: auto;
+}
+
+.rich-text-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #8c8c8c;
+  pointer-events: none;
+}
+
+.rich-text-editor:focus {
+  border-color: #111;
+}
+
+.rich-content {
+  font-weight: 400;
+}
+
+.rich-content p,
+.rich-content div {
+  margin: 0;
+}
+
+.rich-content b,
+.rich-content strong {
+  font-weight: 800;
 }
 
 @media (max-width: 1100px) {

@@ -29,6 +29,10 @@ const fallbackReport = {
   ]
 };
 
+function RichContent({ html }) {
+  return <span className="rich-content" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 async function loadPageData() {
   try {
     const [report, reflections] = await Promise.all([
@@ -78,9 +82,9 @@ export default async function HomePage() {
                   <h3>本月工作概况</h3>
                   <div className="overview-lines">
                     {report.overview_lines.map((line, index) => (
-                      <div className="overview-line" key={line}>
+                      <div className="overview-line" key={`${line}-${index}`}>
                         <i>{index + 1}</i>
-                        <span>{line}</span>
+                        <RichContent html={line} />
                       </div>
                     ))}
                   </div>
@@ -92,14 +96,14 @@ export default async function HomePage() {
                     {report.reflections.map((item) => (
                       <div className="reflection-item" key={item.title}>
                         <b>{item.title}</b>
-                        <p>
+                        <div className="reflection-text">
                           <span className="label">事例：</span>
-                          {item.example}
-                        </p>
-                        <p>
+                          <RichContent html={item.example} />
+                        </div>
+                        <div className="reflection-text">
                           <span className="label">分析：</span>
-                          {item.analysis}
-                        </p>
+                          <RichContent html={item.analysis} />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -113,7 +117,7 @@ export default async function HomePage() {
                         <i>{index + 1}</i>
                         <div>
                           <b>{item.title}</b>
-                          {item.detail}
+                          <RichContent html={item.detail} />
                         </div>
                       </div>
                     ))}

@@ -11,7 +11,8 @@ function getSummary(content) {
   if (!content) {
     return "";
   }
-  return content.length > 76 ? `${content.slice(0, 76)}...` : content;
+  const text = content.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  return text.length > 76 ? `${text.slice(0, 76)}...` : text;
 }
 
 export default function DailyReflections({ reflections }) {
@@ -33,7 +34,10 @@ export default function DailyReflections({ reflections }) {
           </summary>
           <div className="daily-full">
             {item.title ? <b>{item.title}</b> : null}
-            <p>{item.content}</p>
+            <div
+              className="rich-content"
+              dangerouslySetInnerHTML={{ __html: item.content }}
+            />
             {item.image_urls?.length ? (
               <div className="daily-images">
                 {item.image_urls.map((url, index) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import RichTextEditor from "@/app/components/RichTextEditor";
 
 const blankReport = {
   id: null,
@@ -183,11 +184,12 @@ export default function MonthlyReportEditor() {
       <div className="report-editor-group">
         <h2>本月工作概况</h2>
         {report.overview_lines.map((line, index) => (
-          <textarea
+          <RichTextEditor
             key={index}
             value={line}
-            onChange={(event) => updateOverview(index, event.target.value)}
-            rows={2}
+            onChange={(value) => updateOverview(index, value)}
+            minRows={2}
+            placeholder={`概况 ${index + 1}`}
           />
         ))}
       </div>
@@ -206,16 +208,16 @@ export default function MonthlyReportEditor() {
               onChange={(event) => updateReflection(index, "title", event.target.value)}
               placeholder="标题"
             />
-            <textarea
+            <RichTextEditor
               value={item.example}
-              onChange={(event) => updateReflection(index, "example", event.target.value)}
-              rows={3}
+              onChange={(value) => updateReflection(index, "example", value)}
+              minRows={3}
               placeholder="事例"
             />
-            <textarea
+            <RichTextEditor
               value={item.analysis}
-              onChange={(event) => updateReflection(index, "analysis", event.target.value)}
-              rows={3}
+              onChange={(value) => updateReflection(index, "analysis", value)}
+              minRows={3}
               placeholder="分析"
             />
             <button type="button" onClick={() => removeReflection(index)} disabled={report.reflections.length <= 2}>
@@ -239,10 +241,10 @@ export default function MonthlyReportEditor() {
               onChange={(event) => updateTodo(index, "title", event.target.value)}
               placeholder="标题"
             />
-            <textarea
+            <RichTextEditor
               value={item.detail}
-              onChange={(event) => updateTodo(index, "detail", event.target.value)}
-              rows={2}
+              onChange={(value) => updateTodo(index, "detail", value)}
+              minRows={2}
               placeholder="内容"
             />
             <button type="button" onClick={() => removeTodo(index)} disabled={report.todo_items.length <= 3}>
