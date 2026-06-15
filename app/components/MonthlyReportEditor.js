@@ -242,7 +242,7 @@ export default function MonthlyReportEditor() {
     <div className="report-editor">
       <div className="report-draft-box">
         <div className="editor-row">
-          <h2>草稿箱</h2>
+          <h2>月报草稿</h2>
           <button type="button" onClick={newDraft}>
             新建草稿
           </button>

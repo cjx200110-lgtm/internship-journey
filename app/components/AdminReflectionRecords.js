@@ -18,6 +18,7 @@ export default function AdminReflectionRecords() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [savingId, setSavingId] = useState("");
   const [editingId, setEditingId] = useState("");
+  const [expandedId, setExpandedId] = useState("");
   const [pendingAction, setPendingAction] = useState(null);
 
   async function loadRecords() {
@@ -119,9 +120,10 @@ export default function AdminReflectionRecords() {
 
     if (response.ok) {
       setRecords((current) =>
-        current.map((record) => (record.id === item.id ? result.reflection : record))
+        current.map((record) => (record.id === pendingAction.id ? result.reflection : record))
       );
       setEditingId("");
+      setExpandedId(pendingAction.id);
       setStatus("已保存修改");
     } else {
       setStatus(result.error || "保存失败");
@@ -197,6 +199,12 @@ export default function AdminReflectionRecords() {
                   <p>{stripHtml(item.content).slice(0, 96)}</p>
                 </div>
                 <div className="admin-record-actions">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(expandedId === item.id ? "" : item.id)}
+                  >
+                    {expandedId === item.id ? "收起" : "查看全文"}
+                  </button>
                   <button type="button" onClick={() => setEditingId(item.id)}>
                     编辑
                   </button>
@@ -208,6 +216,23 @@ export default function AdminReflectionRecords() {
                     删除
                   </button>
                 </div>
+                {expandedId === item.id ? (
+                  <div className="admin-record-full">
+                    <div
+                      className="rich-content"
+                      dangerouslySetInnerHTML={{ __html: item.content }}
+                    />
+                    {item.image_urls?.length ? (
+                      <div className="admin-record-images">
+                        {item.image_urls.map((url) => (
+                          <a href={url} target="_blank" rel="noreferrer" key={url}>
+                            <img src={url} alt="" />
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </>
             )}
           </article>

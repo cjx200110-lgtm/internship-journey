@@ -584,8 +584,40 @@ main {
   padding-bottom: 72px;
 }
 
+.admin-tabs {
+  width: min(820px, calc(100vw - 32px));
+  display: grid;
+  gap: 18px;
+}
+
+.admin-tab-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 249, 0.82);
+  box-shadow: var(--soft);
+}
+
+.admin-tab-list button {
+  height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #4f4f4f;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-tab-list button.active {
+  background: #111;
+  color: #fff;
+}
+
 .admin-panel {
-  width: min(720px, calc(100vw - 32px));
+  width: 100%;
   background: #fffdf9;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -694,6 +726,28 @@ main {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfaf6;
+}
+
+.admin-record-full {
+  grid-column: 1 / -1;
+  padding-top: 4px;
+  color: #505050;
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.admin-record-full .rich-content {
+  white-space: normal;
+}
+
+.admin-record-full .rich-content p,
+.admin-record-full .rich-content div {
+  margin: 14px 0 0;
+}
+
+.admin-record-full .rich-content p:first-child,
+.admin-record-full .rich-content div:first-child {
+  margin-top: 0;
 }
 
 .admin-record-date {
