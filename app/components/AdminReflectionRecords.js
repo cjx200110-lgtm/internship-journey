@@ -193,10 +193,12 @@ export default function AdminReflectionRecords() {
               </form>
             ) : (
               <>
-                <div>
+                <div className="admin-record-head">
                   <span className="admin-record-date">{formatDate(item.reflection_date)}</span>
-                  <b>{item.title || "无标题"}</b>
-                  <p>{stripHtml(item.content).slice(0, 96)}</p>
+                  <b className="admin-record-title">{item.title || "无标题"}</b>
+                  {expandedId === item.id ? null : (
+                    <p className="admin-record-preview">{stripHtml(item.content).slice(0, 96)}</p>
+                  )}
                 </div>
                 <div className="admin-record-actions">
                   <button

@@ -740,8 +740,16 @@ main {
   white-space: normal;
 }
 
+.admin-record-full .rich-content b,
+.admin-record-full .rich-content strong {
+  display: inline;
+  color: inherit;
+  margin: 0;
+}
+
 .admin-record-full .rich-content p,
 .admin-record-full .rich-content div {
+  display: block;
   margin: 14px 0 0;
 }
 
@@ -761,14 +769,14 @@ main {
   font-weight: 800;
 }
 
-.admin-record b {
+.admin-record-title {
   display: block;
   margin-bottom: 6px;
   color: #202020;
   font-size: 16px;
 }
 
-.admin-record p {
+.admin-record-preview {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
