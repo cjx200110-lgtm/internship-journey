@@ -153,3 +153,52 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status });
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const { id, password } = await request.json();
+    assertAdminPassword(password || "");
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing reflection id." }, { status: 400 });
+    }
+
+    const supabase = getSupabaseAdmin();
+    const { data: reflection, error: findError } = await supabase
+      .from("reflections")
+      .select("id,image_urls")
+      .eq("id", id)
+      .single();
+
+    if (findError) {
+      throw findError;
+    }
+
+    const { error } = await supabase.from("reflections").delete().eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    const imagePaths = (reflection.image_urls || [])
+      .map((url) => {
+        try {
+          const marker = `/storage/v1/object/public/${IMAGE_BUCKET}/`;
+          const index = url.indexOf(marker);
+          return index >= 0 ? decodeURIComponent(url.slice(index + marker.length)) : null;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    if (imagePaths.length) {
+      await supabase.storage.from(IMAGE_BUCKET).remove(imagePaths);
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const status = error.status || (error.name === "ZodError" ? 400 : 500);
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}

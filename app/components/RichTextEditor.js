@@ -30,6 +30,21 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
     syncValue();
   }
 
+  function ensureDefaultTyping() {
+    if (!editorRef.current?.textContent?.trim()) {
+      document.execCommand("removeFormat", false, null);
+      if (document.queryCommandState("bold")) {
+        document.execCommand("bold", false, null);
+      }
+      if (document.queryCommandState("underline")) {
+        document.execCommand("underline", false, null);
+      }
+      if (document.queryCommandState("strikeThrough")) {
+        document.execCommand("strikeThrough", false, null);
+      }
+    }
+  }
+
   function handlePaste(event) {
     event.preventDefault();
     const text = event.clipboardData.getData("text/plain");
@@ -70,6 +85,7 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
         className="rich-text-editor"
         contentEditable
         data-placeholder={placeholder}
+        onFocus={ensureDefaultTyping}
         onInput={syncValue}
         onPaste={handlePaste}
         style={{ minHeight: `${minRows * 34}px` }}

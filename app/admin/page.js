@@ -1,4 +1,5 @@
 import AdminForm from "@/app/components/AdminForm";
+import AdminReflectionRecords from "@/app/components/AdminReflectionRecords";
 import MonthlyReportEditor from "@/app/components/MonthlyReportEditor";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,10 @@ export default function AdminPage() {
       <section className="admin-panel">
         <h1>上传日常心得</h1>
         <AdminForm />
+      </section>
+      <section className="admin-panel">
+        <h1>上传记录</h1>
+        <AdminReflectionRecords />
       </section>
       <section className="admin-panel">
         <h1>月报草稿</h1>

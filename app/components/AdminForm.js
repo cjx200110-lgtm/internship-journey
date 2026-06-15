@@ -41,6 +41,7 @@ export default function AdminForm() {
       setImageCount(0);
       setFileInputKey((value) => value + 1);
       setStatus("已保存");
+      window.dispatchEvent(new Event("reflection-records-updated"));
     } else {
       const result = await response.json().catch(() => ({}));
       setStatus(result.error || "保存失败");
