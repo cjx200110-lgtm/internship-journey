@@ -467,7 +467,18 @@ main {
 }
 
 .daily-entry[open] .daily-preview {
-  visibility: hidden;
+  display: none;
+}
+
+.daily-summary-title {
+  display: none;
+  color: #222;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.daily-entry[open] .daily-summary-title {
+  display: block;
 }
 
 .daily-arrow {
@@ -507,12 +518,6 @@ main {
   color: #505050;
   line-height: 1.9;
   font-size: 15px;
-}
-
-.daily-full-title {
-  display: block;
-  color: #222;
-  margin-bottom: 6px;
 }
 
 .daily-full p {
@@ -992,6 +997,11 @@ main {
   }
 
   .daily-date {
+    grid-column: 1;
+  }
+
+  .daily-preview,
+  .daily-summary-title {
     grid-column: 1 / -1;
   }
 
