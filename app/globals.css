@@ -1427,34 +1427,9 @@ main {
   font-weight: 400 !important;
   line-height: 1.75;
   outline: none;
-  overflow: auto;
-}
-
-.rich-text-editor,
-.rich-text-editor span,
-.rich-text-editor div,
-.rich-text-editor p,
-.rich-text-editor b,
-.rich-text-editor strong {
-  font-weight: 400 !important;
-}
-
-.rich-text-editor .rt-regular {
-  font-weight: 400 !important;
-}
-
-.rich-text-editor .rt-bold {
-  font-weight: 700 !important;
-}
-
-.rich-text-editor[data-empty="true"]::before {
-  content: attr(data-placeholder);
-  color: #8c8c8c;
-  pointer-events: none;
-}
-
-.rich-text-editor .rt-caret-seed {
-  font-weight: 400 !important;
+  resize: vertical;
+  display: block;
+  caret-color: #111;
 }
 
 .rich-text-editor:focus {
