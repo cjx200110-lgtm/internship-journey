@@ -1423,7 +1423,7 @@ main {
   padding: 12px 14px;
   background: #fff;
   color: var(--text);
-  font-family: Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
   font-weight: 400 !important;
   line-height: 1.75;
   outline: none;
@@ -1433,13 +1433,18 @@ main {
 .rich-text-editor,
 .rich-text-editor span,
 .rich-text-editor div,
-.rich-text-editor p {
-  font-weight: 400;
-}
-
+.rich-text-editor p,
 .rich-text-editor b,
 .rich-text-editor strong {
-  font-weight: 800;
+  font-weight: 400 !important;
+}
+
+.rich-text-editor .rt-regular {
+  font-weight: 400 !important;
+}
+
+.rich-text-editor .rt-bold {
+  font-weight: 700 !important;
 }
 
 .rich-text-editor:empty::before {
@@ -1463,6 +1468,14 @@ main {
 
 .rich-content b,
 .rich-content strong {
+  font-weight: 800;
+}
+
+.rich-content .rt-regular {
+  font-weight: 400;
+}
+
+.rich-content .rt-bold {
   font-weight: 800;
 }
 
