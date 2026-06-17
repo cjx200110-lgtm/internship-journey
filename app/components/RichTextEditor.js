@@ -18,6 +18,8 @@ const defaultFormat = {
   fontName: ""
 };
 
+const CARET_SEED = "\u200b";
+
 export default function RichTextEditor({ value, onChange, minRows = 3, placeholder = "" }) {
   const editorRef = useRef(null);
   const activeFormatRef = useRef({ ...defaultFormat });
@@ -31,8 +33,39 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
     }
   }, [value]);
 
+  function getVisibleText(editor) {
+    return (editor?.textContent || "").replaceAll(CARET_SEED, "").trim();
+  }
+
+  function isEditorVisuallyEmpty(editor) {
+    return !getVisibleText(editor);
+  }
+
+  function updateEmptyState() {
+    const editor = editorRef.current;
+
+    if (editor) {
+      editor.dataset.empty = isEditorVisuallyEmpty(editor) ? "true" : "false";
+    }
+  }
+
+  function serializeContent() {
+    const editor = editorRef.current;
+
+    if (!editor) {
+      return "";
+    }
+
+    const clone = editor.cloneNode(true);
+    clone.querySelectorAll(".rt-caret-seed").forEach((node) => node.remove());
+    clone.innerHTML = clone.innerHTML.replaceAll(CARET_SEED, "");
+
+    return clone.textContent.trim() ? clone.innerHTML : "";
+  }
+
   function syncValue() {
-    onChange(editorRef.current?.innerHTML || "");
+    updateEmptyState();
+    onChange(serializeContent());
   }
 
   function normalizeLoadedContent() {
@@ -66,7 +99,7 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
   function resetDefaultFormatIfEmpty() {
     const editor = editorRef.current;
 
-    if (!editor?.textContent?.trim()) {
+    if (isEditorVisuallyEmpty(editor)) {
       activeFormatRef.current = { ...defaultFormat };
       editor.dataset.bold = "false";
       editor.dataset.underline = "false";
@@ -87,6 +120,54 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
     }
   }
 
+  function ensureCaretSeed() {
+    const editor = editorRef.current;
+
+    if (!editor || !isEditorVisuallyEmpty(editor)) {
+      updateEmptyState();
+      return;
+    }
+
+    editor.innerHTML = `<span class="rt-caret-seed">${CARET_SEED}</span>`;
+    updateEmptyState();
+
+    const seed = editor.querySelector(".rt-caret-seed")?.firstChild;
+    const selection = window.getSelection();
+
+    if (seed && selection) {
+      const range = document.createRange();
+      range.setStart(seed, 1);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  }
+
+  function removeCaretSeedIfNeeded() {
+    const editor = editorRef.current;
+
+    if (!editor || isEditorVisuallyEmpty(editor)) {
+      updateEmptyState();
+      return;
+    }
+
+    editor.querySelectorAll(".rt-caret-seed").forEach((node) => {
+      const text = node.textContent.replaceAll(CARET_SEED, "");
+
+      if (text) {
+        const span = document.createElement("span");
+        span.className = "rt-regular";
+        span.style.fontWeight = "400";
+        span.textContent = text;
+        node.replaceWith(span);
+      } else {
+        node.remove();
+      }
+    });
+    editor.innerHTML = editor.innerHTML.replaceAll(CARET_SEED, "");
+    updateEmptyState();
+  }
+
   function cleanAccidentalBoldWhenDefault() {
     const editor = editorRef.current;
 
@@ -103,6 +184,10 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
     });
 
     editor.querySelectorAll("span:not(.rt-bold)").forEach((element) => {
+      if (element.classList.contains("rt-caret-seed")) {
+        return;
+      }
+
       element.classList.add("rt-regular");
       element.style.fontWeight = "400";
     });
@@ -154,6 +239,7 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
 
   function handleFocus() {
     resetDefaultFormatIfEmpty();
+    ensureCaretSeed();
   }
 
   function handleMouseDown(event) {
@@ -162,19 +248,20 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
     window.setTimeout(() => {
       editor.focus();
 
-      if (!editor.textContent?.trim()) {
-        placeCaretAtEnd();
+      if (isEditorVisuallyEmpty(editor)) {
+        ensureCaretSeed();
       }
     }, 0);
   }
 
   function handleClick(event) {
-    if (!event.currentTarget.textContent?.trim()) {
-      placeCaretAtEnd();
+    if (isEditorVisuallyEmpty(event.currentTarget)) {
+      ensureCaretSeed();
     }
   }
 
   function handleInput() {
+    removeCaretSeedIfNeeded();
     cleanAccidentalBoldWhenDefault();
     syncValue();
   }
@@ -223,6 +310,7 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
         contentEditable
         tabIndex={0}
         data-placeholder={placeholder}
+        data-empty="true"
         onMouseDown={handleMouseDown}
         onClick={handleClick}
         onFocus={handleFocus}

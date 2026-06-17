@@ -1447,10 +1447,14 @@ main {
   font-weight: 700 !important;
 }
 
-.rich-text-editor:empty::before {
+.rich-text-editor[data-empty="true"]::before {
   content: attr(data-placeholder);
   color: #8c8c8c;
   pointer-events: none;
+}
+
+.rich-text-editor .rt-caret-seed {
+  font-weight: 400 !important;
 }
 
 .rich-text-editor:focus {
