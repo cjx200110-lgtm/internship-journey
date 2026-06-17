@@ -712,6 +712,13 @@ main {
   line-height: 1.75;
 }
 
+.plain-reflection-textarea {
+  display: block;
+  min-height: 272px;
+  font-weight: 400 !important;
+  caret-color: #111;
+}
+
 .admin-form button {
   height: 48px;
   border: 0;

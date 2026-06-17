@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import RichTextEditor from "@/app/components/RichTextEditor";
 import PasswordDialog from "@/app/components/PasswordDialog";
 
 function today() {
@@ -201,11 +200,12 @@ export default function AdminForm() {
         </label>
         <label>
           心得
-          <RichTextEditor
+          <textarea
+            className="plain-reflection-textarea"
             value={content}
-            onChange={setContent}
-            minRows={8}
+            onChange={(event) => setContent(event.target.value)}
             placeholder="写下今天的心得"
+            rows={8}
           />
         </label>
         <label>
