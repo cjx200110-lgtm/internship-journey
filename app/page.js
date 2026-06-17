@@ -5,33 +5,48 @@ import { getPublishedMonthlyReports, getReflections } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
-const fallbackReport = {
-  id: "fallback",
-  period_start: "",
-  period_end: "",
-  overview_lines: [
-    "完成重点任务的信息梳理、需求确认和阶段性推进。",
-    "沉淀过程文档、问题记录和汇报材料。",
-    "在多任务协作中持续优化沟通节奏、优先级判断和个人复盘方法。"
-  ],
-  reflections: [
-    {
-      title: "任务理解",
-      example: "接到较模糊的任务时，先确认目标、交付标准和关键时间点。",
-      analysis: "前期把问题拆清楚，后续执行会更稳定，也更容易和团队保持同频。"
-    },
-    {
-      title: "沟通协作",
-      example: "在同步进展时补充背景、当前状态和下一步计划。",
-      analysis: "清晰的上下文能减少反复确认，让协作效率更高。"
-    }
-  ],
-  todo_items: [
-    { title: "持续记录", detail: "保持日常心得沉淀。" },
-    { title: "及时复盘", detail: "按阶段整理问题和经验。" },
-    { title: "明确交付", detail: "提前确认目标与标准。" }
-  ]
-};
+function getFallbackPeriod() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const nextMonth = new Date(year, month + 1, 10);
+  const start = `${year}-${String(month + 1).padStart(2, "0")}-10`;
+  const end = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}-10`;
+
+  return { start, end };
+}
+
+function getFallbackReport() {
+  const fallbackPeriod = getFallbackPeriod();
+
+  return {
+    id: "fallback",
+    period_start: fallbackPeriod.start,
+    period_end: fallbackPeriod.end,
+    overview_lines: [
+      "完成重点任务的信息梳理、需求确认和阶段性推进。",
+      "沉淀过程文档、问题记录和汇报材料。",
+      "在多任务协作中持续优化沟通节奏、优先级判断和个人复盘方法。"
+    ],
+    reflections: [
+      {
+        title: "任务理解",
+        example: "接到较模糊的任务时，先确认目标、交付标准和关键时间点。",
+        analysis: "前期把问题拆清楚，后续执行会更稳定，也更容易和团队保持同频。"
+      },
+      {
+        title: "沟通协作",
+        example: "在同步进展时补充背景、当前状态和下一步计划。",
+        analysis: "清晰的上下文能减少反复确认，让协作效率更高。"
+      }
+    ],
+    todo_items: [
+      { title: "持续记录", detail: "保持日常心得沉淀。" },
+      { title: "及时复盘", detail: "按阶段整理问题和经验。" },
+      { title: "明确交付", detail: "提前确认目标与标准。" }
+    ]
+  };
+}
 
 async function loadPageData() {
   try {
@@ -41,12 +56,12 @@ async function loadPageData() {
     ]);
 
     return {
-      reports: reports.length ? reports : [fallbackReport],
+      reports: reports.length ? reports : [getFallbackReport()],
       reflections
     };
   } catch {
     return {
-      reports: [fallbackReport],
+      reports: [getFallbackReport()],
       reflections: []
     };
   }

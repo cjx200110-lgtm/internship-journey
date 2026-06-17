@@ -6,16 +6,14 @@ function RichContent({ html }) {
   return <span className="rich-content" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-function formatDate(value) {
-  return value ? value.replaceAll("-", " / ") : "";
-}
-
 function getPeriodLabel(report) {
-  if (!report?.period_start || !report?.period_end) {
-    return "当前月报";
+  if (!report?.period_start) {
+    const now = new Date();
+    return `${now.getFullYear()}年${now.getMonth() + 1}月`;
   }
 
-  return `${formatDate(report.period_start)} 至 ${formatDate(report.period_end)}`;
+  const [year, month] = report.period_start.split("-");
+  return `${year}年${Number(month)}月`;
 }
 
 export default function MonthlyReportViewer({ reports }) {
