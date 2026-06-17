@@ -16,6 +16,13 @@ function wrapSelection(value, start, end, before, after) {
   return `${value.slice(0, start)}${before}${selected}${after}${value.slice(end)}`;
 }
 
+function getSelectionRange(start, end, before) {
+  const offset = before.length;
+  return start === end
+    ? { start: start + offset, end: start + offset }
+    : { start: start + offset, end: end + offset };
+}
+
 export default function RichTextEditor({ value, onChange, minRows = 3, placeholder = "" }) {
   const textareaRef = useRef(null);
 
@@ -57,11 +64,12 @@ export default function RichTextEditor({ value, onChange, minRows = 3, placehold
     }
 
     const nextValue = wrapSelection(value || "", start, end, before, after);
+    const nextSelection = getSelectionRange(start, end, before);
     onChange(nextValue);
 
     window.requestAnimationFrame(() => {
       textarea.focus();
-      textarea.setSelectionRange(start + before.length, end + before.length);
+      textarea.setSelectionRange(nextSelection.start, nextSelection.end);
     });
   }
 
